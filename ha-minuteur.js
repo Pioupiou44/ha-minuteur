@@ -6,8 +6,9 @@
  */
 import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3.3.1/+esm";
 const R = 46;            // px, hauteur d'une ligne de roue
-const WHEEL_H = 276;     // px, hauteur visible d'une roue
+const WHEEL_H = 208;     // px, hauteur visible d'une roue (réduite d'un quart)
 const PAD = (WHEEL_H - R) / 2;  // ressort haut/bas pour centrer
+const BODY_H = WHEEL_H + 68;    // hauteur FIXE du corps (la tuile ne change jamais de taille)
 
 class HaMinuteur extends LitElement {
   static get properties() {
@@ -33,7 +34,9 @@ class HaMinuteur extends LitElement {
 
   static get styles() {
     return css`
-      ha-card { padding: 18px 20px 20px; }
+      ha-card { padding: 16px 20px 18px; }
+      .body { height:${BODY_H}px; display:flex; flex-direction:column; }
+      .fill { flex:1; display:flex; flex-direction:column; justify-content:center; }
       .head { display:flex; align-items:center; gap:9px; color:var(--secondary-text-color);
               font-size:15px; font-weight:500; margin-bottom:2px; }
       .sub2 { color:var(--secondary-text-color); font-size:12.5px; margin-bottom:14px; }
@@ -58,8 +61,8 @@ class HaMinuteur extends LitElement {
              pointer-events:none; }
       .sep { font-size:30px; font-weight:600; color:var(--primary-text-color);
              margin-top:${(WHEEL_H-R)/2}px; }
-      .cnt { font-size:52px; font-weight:600; color:var(--primary-text-color); text-align:center;
-             font-variant-numeric:tabular-nums; margin-top:20px; letter-spacing:.02em; }
+      .cnt { font-size:46px; font-weight:600; color:var(--primary-text-color); text-align:center;
+             font-variant-numeric:tabular-nums; margin-top:8px; letter-spacing:.02em; }
       .sub { color:var(--secondary-text-color); font-size:13px; text-align:center; margin:6px 0 2px; }
       .bt { display:flex; gap:12px; margin-top:16px; }
       .btn { flex:1; height:50px; border-radius:25px; font-size:16.5px; font-weight:600;
@@ -99,15 +102,17 @@ class HaMinuteur extends LitElement {
         <div class="lbl">${lbl}</div>
       </div>`;
     return html`
-      <div class="sub2">Régler l'heure en glissant haut / bas</div>
-      <div class="wheels">
-        <div class="band"></div>
-        ${wheel('colH', 'heures')}${sep()}${wheel('colM', 'min')}${sep()}${wheel('colS', 'sec')}
-      </div>
-      <div class="bt">
+      <div class="body">
+        <div class="sub2">Régler l'heure en glissant haut / bas</div>
+        <div class="wheels">
+          <div class="band"></div>
+          ${wheel('colH', 'heures')}${sep()}${wheel('colM', 'min')}${sep()}${wheel('colS', 'sec')}
+        </div>
+        <div class="bt" style="margin-top:auto">
         <button class="btn start" @click=${() => this._start()}>
           <ha-icon icon="mdi:play"></ha-icon><span>Démarrer</span></button>
         <button class="btn stop dis"><ha-icon icon="mdi:stop-circle"></ha-icon><span>Stop</span></button>
+        </div>
       </div>
     `;
   }
@@ -120,12 +125,16 @@ class HaMinuteur extends LitElement {
         : '')
       : (this._mode === 'done' ? 'minuteur terminé' : 'figé au stop');
     return html`
-      <div class="cnt ${this._mode === 'done' ? 'term' : ''}">${this._fmt(this._remain)}</div>
-      <div class="sub">${sub}</div>
-      <div class="bt">
+      <div class="body">
+        <div class="fill">
+          <div class="cnt ${this._mode === 'done' ? 'term' : ''}">${this._fmt(this._remain)}</div>
+          <div class="sub">${sub}</div>
+        </div>
+        <div class="bt">
         ${running
           ? html`<button class="btn stop" @click=${() => this._stop()}><ha-icon icon="mdi:stop-circle"></ha-icon><span>Stop</span></button>`
           : html`<button class="btn reset" @click=${() => this._reset()}><ha-icon icon="mdi:restart"></ha-icon><span>Réinitialiser</span></button>`}
+        </div>
       </div>
     `;
   }
@@ -243,7 +252,15 @@ class HaMinuteur extends LitElement {
     try {
       const Ctx = window.AudioContext || window.webkitAudioContext;
       const ctx = new Ctx();
-      [0, 0.4, 0.8, 1.7, 2.1].forEach((t) => this._tone(ctx, 920, t, 0.22, 'square', 0.16));
+      const notes = [
+        [660.0, 0.0, 1.5],  [880.0, 0.28, 1.6],   // carillon E5 → A5, deux fois
+        [660.0, 1.9, 1.5],  [880.0, 2.18, 1.7],
+      ];
+      notes.forEach(([f, when, dur]) => {
+        this._tone(ctx, f, when, dur, 'sine', 0.20);
+        this._tone(ctx, f * 2, when, dur * 0.85, 'sine', 0.05);
+      });
+      this._tone(ctx, 220, 0.0, 2.6, 'sine', 0.06);
       setTimeout(() => { try { ctx.close(); } catch (e) {} }, 3200);
     } catch (e) { /* audio bloqué : le flash visuel reste */ }
   }
