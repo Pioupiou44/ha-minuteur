@@ -1,14 +1,15 @@
 /**
  * Ha-Minuteur — carte Home Assistant « minuteur Android »
  * Roues hh:mm:ss (glisser haut/bas, boucle 23→00) · Démarrer · Stop → Réinitialiser
- * Sans dépendance (helpers de la frontend HA) · theming natif.
- * Auteur : TaTa pour Alexis — 14/11/2026
+ * Import lit autonome (HA 2026 : window.LitElement n'existe plus en globals).
+ * Auteur : TaTa pour Alexis — v1.1.0, 14/11/2026
  */
+import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3.3.1/+esm";
 const R = 46;            // px, hauteur d'une ligne de roue
 const WHEEL_H = 276;     // px, hauteur visible d'une roue
 const PAD = (WHEEL_H - R) / 2;  // ressort haut/bas pour centrer
 
-class HaMinuteur extends window.LitElement {
+class HaMinuteur extends LitElement {
   static get properties() {
     return {
       _mode: { state: true },     // idle | running | paused | done
@@ -31,7 +32,6 @@ class HaMinuteur extends window.LitElement {
   getCardSize() { return 5; }
 
   static get styles() {
-    const css = window.LitHtml.css;
     return css`
       ha-card { padding: 18px 20px 20px; }
       .head { display:flex; align-items:center; gap:9px; color:var(--secondary-text-color);
@@ -261,7 +261,6 @@ class HaMinuteur extends window.LitElement {
 }
 
 /* — helpers de template + enregistrement — */
-const html = window.LitHtml.html;
 const COL_N = { colH: 24, colM: 60, colS: 60 };
 
 function sep() { return html`<div class="sep">:</div>`; }
