@@ -8,7 +8,7 @@ import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3.3.1/+e
 const R = 46;            // px, hauteur d'une ligne de roue
 const WHEEL_H = 208;     // px, hauteur visible d'une roue (réduite d'un quart)
 const PAD = (WHEEL_H - R) / 2;  // ressort haut/bas pour centrer
-const BODY_H = WHEEL_H + 68;    // hauteur FIXE du corps (la tuile ne change jamais de taille)
+const BODY_H = WHEEL_H + 98;    // hauteur FIXE du corps : roues + écart + boutons confortables
 
 class HaMinuteur extends LitElement {
   static get properties() {
@@ -35,7 +35,8 @@ class HaMinuteur extends LitElement {
   static get styles() {
     return css`
       ha-card { padding: 16px 20px 18px; }
-      .body { height:${BODY_H}px; display:flex; flex-direction:column; }
+      .body { height:${BODY_H}px; display:flex; flex-direction:column; justify-content:space-between; }
+      .bt { margin-top:16px !important; }
       .fill { flex:1; display:flex; flex-direction:column; justify-content:center; }
       .head { display:flex; align-items:center; gap:9px; color:var(--secondary-text-color);
               font-size:15px; font-weight:500; margin-bottom:2px; }
@@ -108,7 +109,7 @@ class HaMinuteur extends LitElement {
           <div class="band"></div>
           ${wheel('colH', 'heures')}${sep()}${wheel('colM', 'min')}${sep()}${wheel('colS', 'sec')}
         </div>
-        <div class="bt" style="margin-top:auto">
+        <div class="bt">
         <button class="btn start" @click=${() => this._start()}>
           <ha-icon icon="mdi:play"></ha-icon><span>Démarrer</span></button>
         <button class="btn stop dis"><ha-icon icon="mdi:stop-circle"></ha-icon><span>Stop</span></button>
